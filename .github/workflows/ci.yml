@@ -1,13 +1,14 @@
-name: CI Laravel Librairie
+name: CI Librairie Laravel
 
 on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  laravel-tests:
+    runs-on: ubuntu
 
     services:
       postgres:
@@ -15,9 +16,8 @@ jobs:
         env:
           POSTGRES_DB: librairie
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: secret
-        ports:
-          - 5432:5432
+          POSTGRES_PASSWORD: passer
+        ports: ['5432:5432']
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -25,25 +25,30 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v3
+      - name: 🧾 Récupération du code
+        uses: actions/checkout@v3
 
-      - name: Set up PHP
+      - name: ⚙️ Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.2
-          extensions: mbstring, pdo_pgsql
+          php-version: '8.1'
+          extensions: mbstring, bcmath, pgsql, pdo_pgsql
+          coverage: none
 
-      - name: Install Composer dependencies
-        run: composer install --no-progress --no-suggest --prefer-dist
+      - name: 📦 Installation des dépendances
+        run: |
+          cp .env.example .env
+          composer install --no-progress
+          php artisan key:generate
 
-      - name: Copy .env
-        run: cp .env.example .env
-
-      - name: Generate app key
-        run: php artisan key:generate
-
-      - name: Run migrations
-        run: php artisan migrate --force
-
-      - name: Run Docker build
-        run: docker build -t laravel-librairie .
+      - name: 🧪 Migration et tests
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: librairie
+          DB_USERNAME: postgres
+          DB_PASSWORD: passer
+        run: |
+          php artisan migrate --force
+          php artisan test
