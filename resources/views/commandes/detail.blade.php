@@ -13,7 +13,7 @@
             <p><strong>Auteur :</strong> {{ $livre->auteur }}</p>
             <p><strong>Catégorie :</strong> {{ $livre->categorie }}</p>
             <p><strong>Description :</strong> {{ $livre->description }}</p>
-            <p><strong>Prix :</strong> {{ $livre->prix }} €</p>
+            <p><strong>Prix :</strong> {{ $livre->prix }} F CFA</p>
             <p><strong>Stock :</strong> {{ $livre->stock }}</p>
 
             <form method="POST" action="{{ route('commande.store') }}">

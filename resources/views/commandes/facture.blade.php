@@ -19,11 +19,11 @@
 
 @foreach ($commande->livres as $livre)
     <div class="ligne">
-        {{ $livre->titre }} — {{ $livre->pivot->quantite }} × {{ number_format($livre->pivot->prix_unitaire, 2, ',', ' ') }} €
+        {{ $livre->titre }} — {{ $livre->pivot->quantite }} × {{ number_format($livre->pivot->prix_unitaire, 2, ',', ' ') }} F CFA
     </div>
 @endforeach
 
 <hr>
-<div class="ligne"><strong>Total :</strong> {{ number_format($commande->total, 2, ',', ' ') }} €</div>
+<div class="ligne"><strong>Total :</strong> {{ number_format($commande->total, 2, ',', ' ') }} F CFA</div>
 </body>
 </html>

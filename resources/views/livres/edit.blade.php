@@ -1,27 +1,36 @@
-@extends('layouts.app')
+@extends('adminlte::page')
 
 @section('content')
     <div class="container">
-        <h1 class="mb-4">Modifier le livre</h1>
-
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">✏️ Modifier le livre</h4>
             </div>
-        @endif
+            <div class="card-body">
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-        <form method="POST" action="{{ route('livres.update', $livre->id) }}">
-            @csrf
-            @method('PUT')
+                <form method="POST" action="{{ route('livres.update', $livre->id) }}" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
 
-            @include('livres.form')
+                    @include('livres.form')
 
-            <button type="submit" class="btn btn-primary">💾 Mettre à jour</button>
-            <a href="{{ route('livres.index') }}" class="btn btn-secondary">Annuler</a>
-        </form>
+                    <button type="submit" class="btn btn-primary">
+                        💾 Mettre à jour
+                    </button>
+                    <a href="{{ route('livres.index') }}" class="btn btn-secondary">
+                        🔙 Annuler
+                    </a>
+                </form>
+            </div>
+        </div>
     </div>
 @endsection

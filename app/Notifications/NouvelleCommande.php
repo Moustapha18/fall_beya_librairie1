@@ -7,7 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class ConfirmationCommande extends Notification
+class NouvelleCommande extends Notification
 {
     use Queueable;
 
@@ -26,11 +26,17 @@ class ConfirmationCommande extends Notification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('📦 Confirmation de votre commande')
-            ->greeting('Bonjour ' . $notifiable->name . ' 👋,')
-            ->line('Nous avons bien reçu votre commande n°' . $this->commande->id . '.')
+            ->subject('📥 Nouvelle commande reçue')
+            ->greeting('Bonjour Gestionnaire,')
+            ->line('📦 Une nouvelle commande vient d’être passée.')
+            ->line('🧑 Client : **' . $this->commande->user->name . '**')
             ->line('💵 Montant total : **' . number_format($this->commande->total, 2, ',', ' ') . ' F CFA**')
-            ->action('📄 Voir mes commandes', route('commande.mes'))
-            ->line('Merci de faire confiance à notre librairie 📚 !');
+            ->action('🛠 Gérer la commande', route('commandes.show', $this->commande->id))
+            ->line('Merci de traiter cette commande rapidement.');
+    }
+
+    public function toArray($notifiable): array
+    {
+        return [];
     }
 }

@@ -4,12 +4,27 @@ use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\LivreController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StatistiqueController;
+use Illuminate\Support\Facades\Mail;
 
 
 
 // Page d'accueil
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::get('/test-mail', function () {
+    try {
+        Mail::raw('Ceci est un test d\'envoi d\'email via Mailtrap.', function ($message) {
+            $message->to('exemple@exemple.com') // Peu importe l'adresse ici, Mailtrap intercepte
+            ->subject('📧 Test Mailtrap Laravel');
+        });
+
+        return '✅ Email envoyé avec succès ! Vérifie ta boîte Mailtrap.';
+    } catch (\Exception $e) {
+        Log::error('Erreur d\'envoi d\'email : '.$e->getMessage());
+        return '❌ Échec de l\'envoi : ' . $e->getMessage();
+    }
 });
 
 

@@ -2,32 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Livre; // Import manquant
+use App\Models\Livre;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class LivreController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $livres = Livre::all();
         return view('livres.index', compact('livres'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-
         return view('livres.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -36,8 +27,14 @@ class LivreController extends Controller
             'categorie' => 'required|string|max:255',
             'prix' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
+        $cheminImage = null;
+
+        if ($request->hasFile('image')) {
+            $cheminImage = $request->file('image')->store('livres', 'public');
+        }
 
         Livre::create([
             'titre' => $request->titre,
@@ -45,33 +42,24 @@ class LivreController extends Controller
             'categorie' => $request->categorie,
             'prix' => $request->prix,
             'stock' => $request->stock,
+            'image' => $cheminImage,
         ]);
-
 
         return redirect()->route('livres.index')->with('success', 'Livre ajouté avec succès !');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         $livre = Livre::findOrFail($id);
         return view('livres.show', compact('livre'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
-        $livre = Livre::findOrFail($id); // Correction: récupérer un seul livre par son ID
+        $livre = Livre::findOrFail($id);
         return view('livres.edit', compact('livre'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $request->validate([
@@ -80,19 +68,40 @@ class LivreController extends Controller
             'categorie' => 'required|string|max:255',
             'prix' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $livre = Livre::findOrFail($id); // Correction: récupérer le livre avant de le mettre à jour
-        $livre->update($request->all());
+        $livre = Livre::findOrFail($id);
+
+        if ($request->hasFile('image')) {
+            // Supprimer l'ancienne image si elle existe
+            if ($livre->image) {
+                Storage::disk('public')->delete($livre->image);
+            }
+
+            $livre->image = $request->file('image')->store('livres', 'public');
+        }
+
+        $livre->update([
+            'titre' => $request->titre,
+            'auteur' => $request->auteur,
+            'categorie' => $request->categorie,
+            'prix' => $request->prix,
+            'stock' => $request->stock,
+            'image' => $livre->image, // conserve l'image si non modifiée
+        ]);
+
         return redirect()->route('livres.index')->with('success', 'Livre mis à jour avec succès.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        $livre = Livre::findOrFail($id); // Variable $livre manquante
+        $livre = Livre::findOrFail($id);
+
+        if ($livre->image) {
+            Storage::disk('public')->delete($livre->image);
+        }
+
         $livre->delete();
         return redirect()->route('livres.index')->with('success', 'Livre supprimé avec succès.');
     }

@@ -34,9 +34,9 @@
     <h4>Livres commandés</h4>
     <ul>
         @foreach($commande->livres as $livre)
-            <li>{{ $livre->titre }} — {{ $livre->pivot->quantite }} x {{ $livre->pivot->prix_unitaire }} €</li>
+            <li>{{ $livre->titre }} — {{ $livre->pivot->quantite }} x {{ $livre->pivot->prix_unitaire }} F CFA</li>
         @endforeach
     </ul>
-    <p><strong>Total :</strong> {{ $commande->total }} €</p>
+    <p><strong>Total :</strong> {{ $commande->total }} F CFA</p>
 @endsection
 

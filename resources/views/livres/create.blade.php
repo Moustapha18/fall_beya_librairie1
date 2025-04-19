@@ -1,24 +1,14 @@
-@extends('layouts.app')
+@extends('adminlte::page')
+
+@section('title', 'Ajouter un livre')
 
 @section('content')
-    <div class="container">
-        <h1 class="mb-4">Ajouter un livre</h1>
-
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <form method="POST" action="{{ route('livres.store') }}">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title"><i class="fas fa-plus"></i> Ajouter un livre</h3>
+        </div>
+        <div class="card-body">
             @include('livres.form')
-
-            <button type="submit" class="btn btn-success">💾 Enregistrer</button>
-            <a href="{{ route('livres.index') }}" class="btn btn-secondary">Retour</a>
-        </form>
+        </div>
     </div>
 @endsection

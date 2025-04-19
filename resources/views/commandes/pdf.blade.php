@@ -11,7 +11,7 @@
 </head>
 <body>
 <h2>Commande #{{ $commande->id }}</h2>
-<p><strong>Client :</strong> {{ $commande->user->name }}</p>
+<p><strong>Client :</strong> {{ $commande->user->name ?? 'Inconnu' }}</p>
 <p><strong>Date :</strong> {{ $commande->created_at->format('d/m/Y') }}</p>
 <p><strong>Statut :</strong> {{ ucfirst($commande->statut) }}</p>
 
@@ -36,6 +36,6 @@
     </tbody>
 </table>
 
-<p><strong>Total à payer :</strong> {{ number_format($commande->total, 2, ',', ' ') }} €</p>
+<p><strong>Total à payer :</strong> {{ number_format($commande->total, 2, ',', ' ') }} F CFA</p>
 </body>
 </html>

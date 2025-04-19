@@ -4,7 +4,7 @@
 @section('title', 'Commandes clients')
 
 @section('content_header')
-    <a href="{{ route('commandes.export.pdf') }}" class="btn btn-outline-dark mb-3">📥 Exporter PDF</a>
+{{--    <a href="{{ route('commandes.export.pdf') }}" class="btn btn-outline-dark mb-3">📥 Exporter PDF</a>--}}
 
     <h1>Liste des commandes</h1>
 @endsection
@@ -46,7 +46,7 @@
             <tr>
                 <td>{{ $commande->user->name }}</td>
                 <td>{{ $commande->created_at->format('d/m/Y') }}</td>
-                <td>{{ $commande->total }} €</td>
+                <td>{{ $commande->total }} F CFA</td>
                 <td>{{ ucfirst($commande->statut) }}</td>
                 <td>
                     @if($commande->statut !== 'payée')

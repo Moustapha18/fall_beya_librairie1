@@ -17,7 +17,7 @@
     <tr>
         <th>Client</th>
         <th>Date</th>
-        <th>Total (€)</th>
+        <th>Total (F CFA)</th>
         <th>Statut</th>
     </tr>
     </thead>

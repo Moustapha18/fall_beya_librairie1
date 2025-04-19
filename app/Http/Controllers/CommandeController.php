@@ -2,23 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Commande;
 use App\Models\Livre;
+use App\Models\User;
+use App\Notifications\ConfirmationCommande;
+use App\Notifications\NouvelleCommande;
+use App\Notifications\FactureEnvoyee;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 
 class CommandeController extends Controller
 {
-    public function paiementForm(Commande $commande)
-    {
-        if ($commande->user_id !== Auth::id()) {
-            abort(403);
-        }
-
-        return view('commandes.paiement', compact('commande'));
-    }
-
     public function catalogue()
     {
         $livres = Livre::where('stock', '>', 0)->get();
@@ -54,10 +50,31 @@ class CommandeController extends Controller
             'prix_unitaire' => $livre->prix,
         ]);
 
-        $livre->stock -= $request->quantite;
-        $livre->save();
+        $livre->decrement('stock', $request->quantite);
 
-        return redirect()->route('commande.paiement', $commande)->with('success', 'Commande enregistrée, veuillez procéder au paiement.');
+        // Envoi de confirmation au client
+        Auth::user()->notify(new ConfirmationCommande($commande));
+
+        // Notification aux gestionnaires
+        $gestionnaires = User::where('role', 'gestionnaire')->get();
+        Notification::send($gestionnaires, new NouvelleCommande($commande));
+
+        return redirect()->route('commande.mes')->with('success', 'Commande passée avec succès.');
+    }
+
+    public function updateStatut(Request $request, Commande $commande)
+    {
+        $request->validate(['statut' => 'required']);
+
+        $commande->statut = $request->statut;
+        $commande->save();
+
+        // Envoi de la facture PDF si expédiée
+        if ($commande->statut === 'expédiée') {
+            $commande->user->notify(new FactureEnvoyee($commande));
+        }
+
+        return back()->with('success', 'Statut mis à jour.');
     }
 
     public function exportPdf(Commande $commande)
@@ -65,8 +82,9 @@ class CommandeController extends Controller
         $commande->load('user', 'livres');
 
         $pdf = Pdf::loadView('commandes.pdf', compact('commande'));
-        return $pdf->download('commande_'.$commande->id.'.pdf');
+        return $pdf->download('commande_' . $commande->id . '.pdf');
     }
+
 
     public function mesCommandes()
     {
@@ -91,7 +109,6 @@ class CommandeController extends Controller
         }
 
         $commandes = $query->orderByDesc('created_at')->paginate(10);
-
         return view('commandes.admin.index', compact('commandes'));
     }
 
@@ -104,19 +121,8 @@ class CommandeController extends Controller
     public function exportPdf2()
     {
         $commandes = Commande::with('user')->latest()->get();
-
         $pdf = Pdf::loadView('commandes.admin.pdf', compact('commandes'));
         return $pdf->download('commandes.pdf');
-    }
-
-    public function updateStatut(Request $request, Commande $commande)
-    {
-        $request->validate(['statut' => 'required']);
-
-        $commande->statut = $request->statut;
-        $commande->save();
-
-        return back()->with('success', 'Statut mis à jour.');
     }
 
     public function destroy(Commande $commande)
@@ -140,14 +146,10 @@ class CommandeController extends Controller
     public function payer(Commande $commande)
     {
         if ($commande->statut === 'payée') {
-            return back()->with('error', 'Cette commande est déjà payée.');
+            return back()->with('error', 'Cette commande a déjà été payée.');
         }
 
         $commande->update(['statut' => 'payée']);
-        $commande->load('user', 'livres');
-
-        $pdf = Pdf::loadView('commandes.facture', compact('commande'));
-
-        return $pdf->download('facture_commande_'.$commande->id.'.pdf');
+        return back()->with('success', 'Paiement enregistré avec succès.');
     }
 }

@@ -1,52 +1,46 @@
-@extends('layouts.app')
+@extends('adminlte::page')
+
+@section('title', 'Liste des livres')
+
+@section('content_header')
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>📚 Gestion des livres</h1>
+        <a href="{{ route('livres.create') }}" class="btn btn-success">
+            ➕ Ajouter un livre
+        </a>
+    </div>
+@endsection
 
 @section('content')
-    <div class="container-fluid px-5">
-        <h1 class="mb-4 text-center fw-bold text-primary">📚 Liste des livres</h1>
+    <div class="row mt-3">
+        @foreach($livres as $livre)
+            <div class="col-md-4">
+                <div class="card shadow mb-4">
+                    @if($livre->image)
+                        <img src="{{ asset('storage/' . $livre->image) }}" class="card-img-top" alt="Image de {{ $livre->titre }}" style="height: 200px; object-fit: cover;">
+                    @else
+                        <img src="https://via.placeholder.com/300x200.png?text=Pas+d'image" class="card-img-top" alt="Aucune image">
+                    @endif
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <a href="{{ route('livres.create') }}" class="btn btn-success">
-                ➕ Ajouter un livre
-            </a>
-        </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ $livre->titre }}</h5>
+                        <p class="card-text"><strong>Auteur :</strong> {{ $livre->auteur }}</p>
+                        <p class="card-text"><strong>Catégorie :</strong> {{ $livre->categorie }}</p>
+                        <p class="card-text"><strong>Prix :</strong> {{ number_format($livre->prix, 2, ',', ' ') }} FCFA</p>
+                        <p class="card-text"><strong>Stock :</strong> {{ $livre->stock }}</p>
+                    </div>
 
-        <div class="table-responsive shadow-sm rounded bg-white p-3">
-            <table class="table table-bordered table-striped align-middle text-center">
-                <thead class="table-dark">
-                <tr>
-                    <th class="text-uppercase">Titre</th>
-                    <th class="text-uppercase">Auteur</th>
-                    <th class="text-uppercase">Catégorie</th>
-                    <th class="text-uppercase">Prix</th>
-                    <th class="text-uppercase">Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                @forelse($livres as $livre)
-                    <tr>
-                        <td>{{ $livre->titre }}</td>
-                        <td>{{ $livre->auteur }}</td>
-                        <td>{{ $livre->categorie }}</td>
-                        <td>{{ number_format($livre->prix, 2) }} €</td>
-                        <td>
-                            <a href="{{ route('livres.edit', $livre->id) }}" class="btn btn-warning btn-sm me-1">
-                                ✏️ Modifier
-                            </a>
+                    <div class="card-footer d-flex justify-content-between">
+                        <a href="{{ route('livres.edit', $livre->id) }}" class="btn btn-sm btn-primary">✏️ Modifier</a>
 
-                            <form action="{{ route('livres.destroy', $livre->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Confirmer la suppression ?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-danger btn-sm">🗑️ Supprimer</button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="text-muted">Aucun livre trouvé.</td>
-                    </tr>
-                @endforelse
-                </tbody>
-            </table>
-        </div>
+                        <form action="{{ route('livres.destroy', $livre->id) }}" method="POST" onsubmit="return confirm('Confirmer la suppression ?')">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn btn-sm btn-danger">🗑 Supprimer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endforeach
     </div>
 @endsection
