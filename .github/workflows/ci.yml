@@ -1,54 +1,34 @@
-name: CI Librairie Laravel
+name: CI - Laravel avec Docker
 
 on:
   push:
     branches:
       - main
-  pull_request:
 
 jobs:
-  laravel-tests:
-    runs-on: ubuntu
-
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_DB: librairie
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: passer
-        ports: ['5432:5432']
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+  build-deploy:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: 🧾 Récupération du code
+      - name: 📥 Cloner le dépôt
         uses: actions/checkout@v3
 
-      - name: ⚙️ Setup PHP
+      - name: 🛠️ Configurer PHP et installer les dépendances
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
-          extensions: mbstring, bcmath, pgsql, pdo_pgsql
-          coverage: none
+          php-version: 8.1
 
-      - name: 📦 Installation des dépendances
-        run: |
-          cp .env.example .env
-          composer install --no-progress
-          php artisan key:generate
+      - name: 📦 Installer les dépendances avec Composer
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: 🧪 Migration et tests
-        env:
-          DB_CONNECTION: pgsql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_DATABASE: librairie
-          DB_USERNAME: postgres
-          DB_PASSWORD: passer
-        run: |
-          php artisan migrate --force
-          php artisan test
+      - name: 🐳 Connexion à DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 🏗️ Construire l'image Docker
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/librairie-laravel .
+
+      - name: 📤 Pousser l'image vers DockerHub
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/librairie-laravel
